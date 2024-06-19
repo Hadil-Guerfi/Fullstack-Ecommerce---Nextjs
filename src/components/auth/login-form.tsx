@@ -19,13 +19,19 @@ import { Button } from "../ui/button";
 import FormError from "../ui/form-error";
 import FormSuccess from "../ui/form-success";
 import { login } from "../../../actions/login";
+import { useSearchParams } from "next/navigation";
 
 
 function LoginForm() {
-
-
-  const [error,setError]=useState<string|undefined>()
+  const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
+
+  const searchParams = useSearchParams();
+  //url in this form : http://localhost:3000/auth/login?error=OAuthAccountNotLinked
+  const urlError =
+    searchParams.get("error") === "OAuthAccountNotLinked"
+      ? "Email already in use with diffrent provider!"
+      : "";
 
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
@@ -35,16 +41,19 @@ function LoginForm() {
     },
   });
 
-  const onSubmit =(values: z.infer<typeof LoginSchema>) => {
-   
-    setError("")
-    setSuccess("")
+  const onSubmit = (values: z.infer<typeof LoginSchema>) => {
+    setError("");
+    setSuccess("");
 
-    login(values).then((data)=>{
-      setError(data?.error)
-      setSuccess(data?.success)
+    login(values).then((data) => {
+      setError(data?.error);
+      setSuccess(data?.success);
+
+
+
     });
   };
+
 
   return (
     <CardWrapper
@@ -86,13 +95,13 @@ function LoginForm() {
               )}
             />
           </div>
-          <FormError message={error}/>
-          <FormSuccess message={success}/>
+          <FormError message={error || urlError} />
+          <FormSuccess message={success} />
           <Button
             type="submit"
             className="w-full"
             disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting?"Logining in ...": "Login"}
+            {form.formState.isSubmitting ? "Logining in ..." : "Login"}
           </Button>
         </form>
       </Form>
