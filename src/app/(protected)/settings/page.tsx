@@ -1,24 +1,26 @@
+"use client"
 import { auth, signOut } from '@/auth'
 import { Button } from '@/components/ui/button';
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes';
+import { useSession } from 'next-auth/react';
 import React from 'react'
+import { logout } from '../../../../actions/logout';
+import { useCurrentUser } from '@/hooks/use-current-user';
 
-async function SettingsPage() {
+ function SettingsPage() {
 
-    const session=await auth()
 
+  const user = useCurrentUser();
+
+  const onClick= ()=>{
+     logout();
+  }
 
   return (
-    <div>
-      <div>{JSON.stringify(session)}</div>
-      <form action={async()=>{
-        "use server";
-        await signOut({ redirectTo: "/auth/login", redirect: true });
-      }}>
-
-        <Button type='submit' >Sign out</Button>
-
-      </form>
+    <div className='bg-white p-10 rounded-e-xl'>
+      <Button onClick={onClick} type="submit">
+        Sign out
+      </Button>
     </div>
   );
 }

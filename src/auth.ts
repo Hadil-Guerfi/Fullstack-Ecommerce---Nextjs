@@ -8,10 +8,11 @@ import { getTwoFactorConfirmationByUserId } from "../data/two-factor-confirmatio
 
 //used to add attribut to default session user ( its not same as our user schema)
 declare module "next-auth" {
-  interface Session {
+  export interface Session {
     user: {
       id: string;
       role: "USER" | "ADMIN";
+      isTwoFactorEnabled: boolean;
     } & DefaultSession["user"];
   }
 }
@@ -22,8 +23,10 @@ declare module "next-auth/jwt" {
   }
 }
 
-//signIn , signOut , auth are used in server componenents
-//there is a way to use in client compos from next-auth/react not from @/auth initial idea !
+//signIn , signOut , auth are used in server componenents only or in server actions
+/*there is a way to use them in client compos is to import from next-auth/react not from @/auth 
+  or declare server actions that impelement those methods and use those server actions inside client compos
+*/
 export const { handlers, auth, signIn, signOut } = NextAuth({
   pages: {
     signIn: "/auth/login",
@@ -75,6 +78,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const existingUser = await getUserById(token.sub);
       if (!existingUser) return token;
       token.role = existingUser.role;
+      token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
+
       return token;
     },
 
@@ -85,6 +90,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.role && session.user) {
         session.user.role = token.role;
       }
+       if (token.isTwoFactorEnabled && session.user) {
+         session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean;
+       }
       return session;
     },
   },
