@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import db from "@/lib/db";
 import { getUserById } from "../data/user";
 import { JWT } from "next-auth/jwt";
+import { getTwoFactorConfirmationByUserId } from "../data/two-factor-confirmation";
 
 //used to add attribut to default session user ( its not same as our user schema)
 declare module "next-auth" {
@@ -44,19 +45,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 
   callbacks: {
-
     //singin executed always what ever sign in method is
-    async signIn({user,account}){
+    async signIn({ user, account }) {
       //Allow OAuth without email verification
       if (account?.provider !== "credentials") return true;
 
-      const existingUser = await getUserById(user.id as string) ;
+      const existingUser = await getUserById(user.id as string);
 
       //Prevent sign in without email verfication
       if (!existingUser?.emailVerified) return false;
 
       //TODO : Add 2FA check
-
+      if (existingUser.isTwoFactorEnabled) {
+        const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(
+          existingUser.id
+        );
+        if (!twoFactorConfirmation) return false;
+        await db.twoFactorConfirmation.delete({
+          where: {
+            id: twoFactorConfirmation.id,
+          },
+        });
+      }
       return true;
     },
 
