@@ -45,19 +45,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   callbacks: {
 
+    //singin executed alwawys what ever sign in method is
     async signIn({user,account}){
       //Allow OAuth without email verification
-      if(account?.provider!=="credentials") return true;
-      
-      const existingUser=await getUserById(user.id);
-      
-        if (!existingUser?.emailVerified)
-          //Prevent sign in without email verfication
-          return false;
-      
+      if (account?.provider !== "credentials") return true;
+
+      const existingUser = await getUserById(user.id);
+
+      //Prevent sign in without email verfication
+      if (!existingUser?.emailVerified) return false;
+
       //TODO : Add 2FA check
-      
-      return true
+
+      return true;
     },
 
     async jwt({ token }) {
@@ -69,7 +69,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async session({ token, session }) {
-      console.log({ sessionToken: token });
       if (token.sub && session.user) {
         session.user.id = token.sub;
       }

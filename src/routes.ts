@@ -1,5 +1,5 @@
 // These routes do not require authentication
-export const publicRoutes = ["/"];
+export const publicRoutes = ["/", "/auth/new-verification"];
 
 // These routes are used for authentication
 // When user is not logged in and try to access to protected page we redirect him to login
