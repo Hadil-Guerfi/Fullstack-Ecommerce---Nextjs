@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import CardWrapper from "./card-wrapper";
 import { useForm } from "react-hook-form";
 import { LoginSchema } from "../../../schemas";
@@ -21,16 +21,16 @@ import FormSuccess from "../ui/form-success";
 import { login } from "../../../actions/login";
 import { useSearchParams } from "next/navigation";
 
-
 function LoginForm() {
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
+  const [isPending, startTransition] = useTransition();
 
   const searchParams = useSearchParams();
   //url in this form : http://localhost:3000/auth/login?error=OAuthAccountNotLinked
   const urlError =
     searchParams.get("error") === "OAuthAccountNotLinked"
-      ? "Email already in use with diffrent provider!"
+      ? "Email already in use with different provider!"
       : "";
 
   const form = useForm<z.infer<typeof LoginSchema>>({
@@ -45,15 +45,13 @@ function LoginForm() {
     setError("");
     setSuccess("");
 
-    login(values).then((data) => {
-      setError(data?.error);
-      setSuccess(data?.success);
-
-
-
+    startTransition(() => {
+      login(values).then((data) => {
+        setError(data?.error);
+        setSuccess(data?.success);
+      });
     });
   };
-
 
   return (
     <CardWrapper
@@ -97,11 +95,8 @@ function LoginForm() {
           </div>
           <FormError message={error || urlError} />
           <FormSuccess message={success} />
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? "Logining in ..." : "Login"}
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending ? "Logging in ..." : "Login"}
           </Button>
         </form>
       </Form>

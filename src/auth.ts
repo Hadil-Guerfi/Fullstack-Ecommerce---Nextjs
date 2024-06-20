@@ -45,12 +45,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   callbacks: {
 
-    //singin executed alwawys what ever sign in method is
+    //singin executed always what ever sign in method is
     async signIn({user,account}){
       //Allow OAuth without email verification
       if (account?.provider !== "credentials") return true;
 
-      const existingUser = await getUserById(user.id);
+      const existingUser = await getUserById(user.id as string) ;
 
       //Prevent sign in without email verfication
       if (!existingUser?.emailVerified) return false;
