@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import CardWrapper from "./card-wrapper";
 import { useForm } from "react-hook-form";
 import { RegisterSchema } from "../../../schemas";
@@ -23,6 +23,7 @@ import { register } from "../../../actions/register";
 function RegisterForm() {
   const [error, setError] = useState<string | undefined>();
   const [success, setSuccess] = useState<string | undefined>();
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof RegisterSchema>>({
     resolver: zodResolver(RegisterSchema),
@@ -37,9 +38,11 @@ function RegisterForm() {
     setError("");
     setSuccess("");
 
-    register(values).then((data) => {
-      setError(data.error);
-      setSuccess(data.success);
+    startTransition(() => {
+      register(values).then((data) => {
+        setError(data.error);
+        setSuccess(data.success);
+      });
     });
   };
 
@@ -98,13 +101,8 @@ function RegisterForm() {
           </div>
           <FormError message={error} />
           <FormSuccess message={success} />
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={form.formState.isSubmitting}>
-            {form.formState.isSubmitting
-              ? "Creating an account ..."
-              : "Create an account"}
+          <Button type="submit" className="w-full" disabled={isPending}>
+            {isPending ? "Creating an account ..." : "Create an account"}
           </Button>
         </form>
       </Form>
