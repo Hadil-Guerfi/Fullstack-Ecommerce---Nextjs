@@ -21,6 +21,7 @@ import FormSuccess from "../ui/form-success";
 import { login } from "../../../actions/login";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 function LoginForm() {
   const [error, setError] = useState<string | undefined>();
@@ -43,9 +44,13 @@ function LoginForm() {
     },
   });
 
+  const { update } = useSession();
+
   const onSubmit = (values: z.infer<typeof LoginSchema>) => {
     setError("");
     setSuccess("");
+
+
 
     startTransition(() => {
       login(values).then((data) => {
@@ -54,9 +59,12 @@ function LoginForm() {
           setError(data?.error);
         }
 
+
         if (data?.success) {
           form.reset();
           setSuccess(data?.success);
+          update();
+
         }
         if(data?.twoFactor){
           setShowTwoFactor(true)

@@ -5,21 +5,46 @@ import db from "@/lib/db";
 import { getUserById } from "../data/user";
 import { JWT } from "next-auth/jwt";
 import { getTwoFactorConfirmationByUserId } from "../data/two-factor-confirmation";
+import { getAccountByUserId } from "../data/account";
 
-//used to add attribut to default session user ( its not same as our user schema)
+/*used to add attribut to default session user ( which is not same as our user schema) to match our User Schema by TS
+default user is : 
+export interface User {
+  id?: string
+  name?: string | null
+  email?: string | null
+  image?: string | null
+}
+*/
 declare module "next-auth" {
   export interface Session {
     user: {
       id: string;
       role: "USER" | "ADMIN";
       isTwoFactorEnabled: boolean;
+      isOAuth: boolean;
     } & DefaultSession["user"];
   }
 }
 
+/*it allows you to include custom properties in the JWT to match our User Schema by TS.
+more than those default attributs : 
+export interface DefaultJWT extends Record<string, unknown> {
+  name?: string | null
+  email?: string | null
+  picture?: string | null
+  sub?: string
+  iat?: number
+  exp?: number
+  jti?: string
+};
+*/
 declare module "next-auth/jwt" {
   interface JWT {
     role?: "USER" | "ADMIN";
+    id: string;
+    isTwoFactorEnabled: boolean;
+    isOAuth: boolean;
   }
 }
 
@@ -77,6 +102,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!token.sub) return token;
       const existingUser = await getUserById(token.sub);
       if (!existingUser) return token;
+
+      const existingAccount = await getAccountByUserId(existingUser.id);
+
+      token.isOAuth = !!existingAccount;
+      //when we want to pass a certain property to session through token
+      //ALSO when we want an automatique update (reload) when we update certain of this attributs
+      token.name = existingUser.name;
+      token.email = existingUser.email;
       token.role = existingUser.role;
       token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled;
 
@@ -90,9 +123,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.role && session.user) {
         session.user.role = token.role;
       }
-       if (token.isTwoFactorEnabled && session.user) {
-         session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean;
-       }
+      if (token.isTwoFactorEnabled && session.user) {
+        session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean;
+      }
+      //ALSO when we want an automatique update (reload) when we update certain of this attributs get them from token
+      if (session.user) {
+        session.user.name = token.name;
+        session.user.email = token.email as string;
+        session.user.isOAuth = token.isOAuth;
+      }
       return session;
     },
   },
