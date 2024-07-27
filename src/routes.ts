@@ -1,5 +1,10 @@
 // These routes do not require authentication
-export const publicRoutes = ["/", "/auth/new-verification", "/auth/new-password"];
+export const publicRoutes = [
+  "/",
+  "/auth/new-verification",
+  "/auth/new-password",
+  "/webhook/stripe",
+];
 
 // These routes are used for authentication
 // When user is not logged in and try to access to protected page we redirect him to login
@@ -8,6 +13,7 @@ export const authRoutes = [
   "/auth/login",
   "/auth/register",
   "/auth/error",
+  "/auth/forbidden",
   "/auth/reset",
   
 ];
@@ -17,4 +23,4 @@ export const authRoutes = [
 export const apiAuthPrefix = "/api/auth";
 
 //The default redirect path after logging in
-export const DEFAULT_LOGIN_REDIRECT = "/settings";
+// export const DEFAULT_LOGIN_REDIRECT = "/";

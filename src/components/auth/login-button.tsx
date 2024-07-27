@@ -1,30 +1,30 @@
-"use client";
+// "use client";
 
-type LoginButtonProps = {
-  children: React.ReactNode;
-  mode?: "modal" | "redirect";
-  asChild?: boolean;
-};
+// type LoginButtonProps = {
+//   children: React.ReactNode;
+//   mode?: "modal" | "redirect";
+//   asChild?: boolean;
+// };
 
-import { useRouter } from "next/navigation";
-import React from "react";
+// import { useRouter } from "next/navigation";
+// import React from "react";
 
-function LoginButton({ children, mode, asChild }: LoginButtonProps) {
+// function LoginButton({ children, mode, asChild }: LoginButtonProps) {
 
  
 
-    const router=useRouter()
+//     const router=useRouter()
 
-    const clickBtn=()=>{
-        router.push("/auth/login")
+//     const clickBtn=()=>{
+//         router.push("/auth/login")
         
-    }
+//     }
 
-       if (mode === "modal") {
-         return <span>ToDo : impelment modal</span>;
-       }
+//        if (mode === "modal") {
+//          return <span>ToDo : impelment modal</span>;
+//        }
 
-  return <span className="cursor-pointer" onClick={clickBtn}>{children}</span>;
-}
+//   return <span className="cursor-pointer" onClick={clickBtn}>{children}</span>;
+// }
 
-export default LoginButton;
+// export default LoginButton;

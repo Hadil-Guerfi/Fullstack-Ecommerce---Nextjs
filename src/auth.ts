@@ -52,7 +52,7 @@ declare module "next-auth/jwt" {
 /*there is a way to use them in client compos is to import from next-auth/react not from @/auth 
   or declare server actions that impelement those methods and use those server actions inside client compos
 */
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut,unstable_update } = NextAuth({
   pages: {
     signIn: "/auth/login",
     error: "/auth/error",
@@ -95,6 +95,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         });
       }
+      
       return true;
     },
 
@@ -134,6 +135,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return session;
     },
+
   },
 
   adapter: PrismaAdapter(db),

@@ -1,34 +1,35 @@
 import authConfig from "./auth.config";
 import NextAuth from "next-auth";
-import {
-  DEFAULT_LOGIN_REDIRECT,
-  apiAuthPrefix,
-  authRoutes,
-  publicRoutes,
-} from "./routes";
+import { apiAuthPrefix, authRoutes, publicRoutes } from "./routes";
+import { currentUser } from "./lib/auth";
+import { UserRole } from "@prisma/client";
 
 // auth middleware function is invoked only with routes that match the config below
 
 const { auth } = NextAuth(authConfig);
 
-export default auth((req) => {
+export default auth(async (req) => {
   const { nextUrl } = req;
 
+  const user = await currentUser();
+
   const isLoggedIn = !!req.auth;
-
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
-
   const isPublicRoute = publicRoutes.includes(nextUrl.pathname);
-
   const isAuthRoute = authRoutes.includes(nextUrl.pathname);
+  const isAdminRoute = nextUrl.pathname.startsWith("/admin/");
 
   if (isApiAuthRoute) {
-    return; //we will not doing anything
+    return; // We will not do anything
   }
 
   if (isAuthRoute) {
     if (isLoggedIn) {
-      return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+      if (user?.role === UserRole.ADMIN) {
+        return Response.redirect(new URL("/admin", nextUrl));
+      } else if (user?.role === UserRole.USER) {
+        return Response.redirect(new URL("/", nextUrl));
+      }
     }
     return;
   }
@@ -36,7 +37,12 @@ export default auth((req) => {
   if (!isLoggedIn && !isPublicRoute) {
     return Response.redirect(new URL("/auth/login", nextUrl));
   }
-  return; //allow this and don't do anything
+
+  if (isLoggedIn && isAdminRoute && user?.role !== "ADMIN") {
+    return Response.redirect(new URL("/auth/forbidden", nextUrl));
+  }
+
+  return; //  return;  means Allow this and don't do anything
 });
 
 export const config = {

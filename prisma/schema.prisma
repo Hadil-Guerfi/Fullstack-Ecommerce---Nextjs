@@ -24,6 +24,7 @@ model User {
   id            String    @id @default(cuid())
   name          String?
   email         String?   @unique
+  
   emailVerified DateTime? @map("email_verified")
   image         String?
   password      String?
@@ -32,7 +33,9 @@ model User {
   isTwoFactorEnabled Boolean @default(false)
 
   twoFactorConfirmation   TwoFactorConfirmation?
-
+ createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
   @@map("users")
 
 }
@@ -94,4 +97,40 @@ model TwoFactorConfirmation {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId])
+}
+
+
+model Product {
+  id                     String                 @id @default(uuid())
+  name                   String
+  priceInCents           Int
+  filePath               String
+  imagePath              String
+  description            String
+  isAvailableForPurchase Boolean                @default(true)
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+  orders                 Order[]
+  downloadVerifications  DownloadVerification[]
+}
+
+
+model Order {
+  id               String   @id @default(uuid())
+  pricePaidInCents Int //priceInCents + tarif
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  userId    String
+  productId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+}
+
+model DownloadVerification {
+  id        String   @id @default(uuid())
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }

@@ -50,8 +50,6 @@ function SettingsPage() {
     },
   });
 
-  console.log(user?.isOAuth);
-
   const onSubmit = (values: z.infer<typeof SettingsSchema>) => {
     startTransition(() => {
       settings(values)
@@ -71,9 +69,9 @@ function SettingsPage() {
   };
 
   return (
-    <Card className="w-[600px]">
+    <Card className="w-1/2 mx-auto">
       <CardHeader>
-        <p className="text-2xl font-semibold text-center ">Settings</p>
+        <p className="text-2xl font-semibold text-center ">Profile</p>
       </CardHeader>
       <CardContent>
         <FormProvider {...form}>

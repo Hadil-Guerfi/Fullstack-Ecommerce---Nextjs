@@ -2,7 +2,6 @@
 
 import { z } from "zod";
 import { LoginSchema } from "../schemas";
-import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { signIn } from "@/auth"; // destucted in auth.ts
 import { AuthError } from "next-auth";
 import { getUserByEmail } from "../data/user";
@@ -11,6 +10,7 @@ import { sendTwoFactorTokenEmail, sendVerificationEmail } from "@/lib/mail";
 import { getTwoFactorTokenByEmail } from "../data/two-factor-token";
 import db from "@/lib/db";
 import { getTwoFactorConfirmationByUserId } from "../data/two-factor-confirmation";
+import { UserRole } from "@prisma/client";
 
 export const login = async (values: z.infer<typeof LoginSchema>) => {
   const validatedFields = LoginSchema.safeParse(values);
@@ -21,6 +21,8 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
   const { email, password, code } = validatedFields.data;
 
   const existingUser = await getUserByEmail(email);
+
+
   if (!existingUser || !existingUser.email || !existingUser.password) {
     return { error: "Email deos not exist!" };
   }
@@ -89,11 +91,13 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
     }
   }
 
+
   try {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: DEFAULT_LOGIN_REDIRECT,
+      redirectTo:existingUser.role === UserRole.ADMIN ? "/admin" : "/",
+      redirect:true
     });
   } catch (error) {
     if (error instanceof AuthError) {

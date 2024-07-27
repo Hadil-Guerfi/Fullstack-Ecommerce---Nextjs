@@ -5,8 +5,10 @@ import { getUserByEmail } from "../data/user";
 import bcrypt from "bcryptjs";//should be bcryptjs to work
 import github from "next-auth/providers/github";
 import google from "next-auth/providers/google";
+import { unstable_update } from "./auth";
 
 export default {
+
   providers: [
     google({
       clientId: process.env.GOOGLE_CLIENT_ID,
